@@ -70,3 +70,27 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .analysis-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 12px 0; }
 .analysis-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--brand); min-width: 24px; position: relative; transition: height 0.4s; }
 .analysis-bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+/* 重算影响与质量复核 */
+.success-text { color: #067647; font-size: 13px; }
+.warn-value { color: #b54708; }
+.muted-text { color: var(--muted); font-size: 12px; }
+.pill { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 12px; border: 1px solid var(--border); background: #f8fafc; }
+.pill-ok { background: #ecfdf3; border-color: #abefc6; color: #067647; }
+.pill-pending { background: #fffaeb; border-color: #fedf89; color: #b54708; }
+.pill-muted { background: #f2f4f7; color: var(--muted); }
+.pill-rule { background: #eff8ff; border-color: #b2ddff; color: #175cd3; margin-right: 4px; }
+.batch-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.batch-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.batch-head h3 { margin: 0; font-size: 15px; }
+.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 16px; margin: 10px 0 12px; }
+.input-grid dt { font-size: 12px; color: var(--muted); }
+.input-grid dd { margin: 2px 0 0; font-size: 13px; }
+.skip-reason { font-size: 12px; color: var(--muted); }
+.warning-banner { background: #fffaeb; border: 1px solid #fedf89; color: #b54708; border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.policy-reason { background: #f8fafc; border-left: 3px solid var(--brand); padding: 8px 10px; font-size: 13px; }
+.history-block { margin-top: 12px; }
+.history-block h4 { margin: 0 0 6px; font-size: 13px; }
+.filter-item select, .filter-item input { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; }
+.create-field select { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+.policy-list { margin: 0 0 10px; padding-left: 18px; font-size: 13px; }
+.policy-list li { margin-bottom: 4px; }

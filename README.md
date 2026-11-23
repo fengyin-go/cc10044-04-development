@@ -71,6 +71,40 @@ npm run dev
 | 清理作业 | `cleanup_job` | 清理作业 | 作业名称、目标路径、清理条件 |
 | 目录同步 | `catalog_sync` | 同步任务 | 任务名称、源Catalog、目标Catalog |
 
+## 聚合重算影响与质量复核
+
+聚合表构建器除了聚合配置列表，还提供按计算批次归并的**重算影响视图**
+（`/agg_builder/impact`）：
+
+- 每个计算批次单独展示输入批次、输入快照、水位线和差额；同一地区同一天
+  因迟到数据补写出现多个批次时，各批次分别关联自己的输入与差额。
+- 每个变化分区标明是当前版本还是历史版本，并给出最新版本的输出值。
+- 质量规则按“启用状态 + 覆盖地区”判断是否适用：已停用的规则、以及仅覆盖
+  华南的规则不会在华北重算上触发，跳过原因直接在影响项上展示。
+
+数据质量模块的**质量复核台**（`/data_quality_rule/reviews`）从影响视图
+领用分区和计算版本，为适用规则生成复核项：
+
+- 新批次到达后自动为最新版本生成有效复核项；旧版本复核项保留为历史版本。
+- 领到旧项的人可以查到该复核项还能提交什么：按历史批次的输出补录实际核验值，
+  提交后标记为历史复核，不覆盖当前有效复核项；已提交的旧项只读可回查。
+- 同一地区同一天的每个计算版本都保留输出值和质检结论，可通过
+  `GET /api/agg_builder/{id}/partitions/history` 或复核项详情回查。
+
+相关接口：
+
+```text
+GET  /api/agg_builder/{id}/impact?region=&date=
+POST /api/agg_builder/{id}/impact/claim
+POST /api/agg_builder/{id}/recompute          # 登记一轮补充重算
+GET  /api/agg_builder/{id}/partitions/history?region=&date=&rule_id=
+GET  /api/data_quality_rule/reviews?region=&date=&status=&valid=
+POST /api/data_quality_rule/reviews/claim
+GET  /api/data_quality_rule/reviews/{review_id}
+POST /api/data_quality_rule/reviews/{review_id}/claim
+POST /api/data_quality_rule/reviews/{review_id}/submit
+```
+
 ## 约定
 
 - 全部模块共享`frontend/src/views/WorkbenchView.vue|tsx`和一套资源路由。

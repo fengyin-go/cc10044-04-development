@@ -1,6 +1,8 @@
 """业务路由汇总：所有模块共用一套资源路由，由领域服务完成分派。"""
 from __future__ import annotations
 
-from app.routers import resource
+from app.routers import recompute, resource
 
-ROUTERS = [resource]
+# recompute 里有 /api/data_quality_rule/reviews 这类固定段路由，
+# 必须排在 /api/{module}/{entry_id} 之前注册。
+ROUTERS = [recompute, resource]

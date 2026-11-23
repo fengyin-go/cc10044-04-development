@@ -53,6 +53,20 @@ SEED_ROWS: dict[str, list[dict[str, Any]]] = {
         {"id": 4, "status": "已忽略", "pending": False, "abnormal": False,
          "规则名称": "旧日志格式校验", "校验维度": "consistency", "目标表": "legacy_raw_logs",
          "阈值": "0.80", "最近分数": "0.45"},
+        # 聚合结果复核用的表级规则：覆盖地区决定重算影响是否触发，
+        # 启用状态为已停用的规则不参与任何地区的复核。
+        {"id": 5, "status": "待校验", "pending": True, "abnormal": False,
+         "规则名称": "区域日销售额聚合一致性", "校验维度": "accuracy",
+         "目标表": "dwd_orders_clean_agg_sum", "阈值": "0.99", "最近分数": "",
+         "覆盖地区": "华北,华东,华南", "启用状态": "已启用"},
+        {"id": 6, "status": "待校验", "pending": True, "abnormal": False,
+         "规则名称": "华南区域销售额波动校验", "校验维度": "consistency",
+         "目标表": "dwd_orders_clean_agg_sum", "阈值": "0.95", "最近分数": "",
+         "覆盖地区": "华南", "启用状态": "已启用"},
+        {"id": 7, "status": "待校验", "pending": False, "abnormal": False,
+         "规则名称": "区域聚合历史口径校验", "校验维度": "completeness",
+         "目标表": "dwd_orders_clean_agg_sum", "阈值": "0.98", "最近分数": "",
+         "覆盖地区": "华北,华东,华南", "启用状态": "已停用"},
     ],
     "schema_change": [
         {"id": 1, "status": "待审批", "pending": True, "abnormal": False,

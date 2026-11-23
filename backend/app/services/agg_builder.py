@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services import recompute_impact
 from app.services.base import BaseModuleService
 from app.store import store
 
@@ -137,6 +138,77 @@ class AggBuilderService(BaseModuleService):
             "quality_rules": len(quality_checks),
             "update_recommendation": "下游有消费者，请确保增量更新在消费前完成",
         }
+
+    def recompute_impact(
+        self,
+        entry_id: int,
+        *,
+        region: str | None = None,
+        date: str | None = None,
+    ) -> dict[str, Any]:
+        """重算影响视图：按计算批次归并发生变化的聚合分区。
+
+        同一地区、同一日期若因补写出现多个批次，每个批次独立给出输入
+        快照和差额，并标明哪个版本是当前有效版本。
+        """
+        entry = store.find(self.MODULE, entry_id)
+        if entry is None:
+            return {"ok": False, "message": "聚合配置不存在"}
+        view = recompute_impact.get_impact_view(
+            aggregate_config_id=entry_id, region=region, date=date)
+        view["aggregate_config_name"] = entry.get("配置名称")
+        return view
+
+    def claim_impact_reviews(
+        self,
+        entry_id: int,
+        *,
+        impact_ids: list[str] | None = None,
+        batch_ids: list[str] | None = None,
+        rule_ids: list[int] | None = None,
+        reviewer: str | None = None,
+    ) -> dict[str, Any]:
+        """从影响视图领用受影响分区和计算版本，为适用规则生成复核项。"""
+        entry = store.find(self.MODULE, entry_id)
+        if entry is None:
+            return {"ok": False, "message": "聚合配置不存在"}
+        return recompute_impact.claim_reviews(
+            impact_ids=impact_ids,
+            batch_ids=batch_ids,
+            rule_ids=rule_ids,
+            reviewer=reviewer,
+        )
+
+    def register_recompute(
+        self,
+        entry_id: int,
+        *,
+        region: str,
+        date: str,
+        input_batch_id: str,
+        current_value: Any,
+        previous_value: Any | None = None,
+        trigger: str = "迟到数据补写",
+        operator: str = "值班员",
+        changed_rows: int = 0,
+    ) -> dict[str, Any]:
+        """登记一轮补充重算：旧复核项降级为历史版本，新版本生成有效复核项。"""
+        entry = store.find(self.MODULE, entry_id)
+        if entry is None:
+            return {"ok": False, "message": "聚合配置不存在"}
+        if region not in recompute_impact.REGION_CODES:
+            return {"ok": False, "message": f"未知地区：{region}"}
+        return recompute_impact.append_batch(
+            region=region,
+            partition_date=date,
+            input_batch_id=input_batch_id,
+            current_value=current_value,
+            previous_value=previous_value,
+            trigger=trigger,
+            operator=operator,
+            changed_rows=changed_rows,
+            aggregate_config_id=entry_id,
+        )
 
     def _estimate_agg_rows(self, dimension_count: int) -> int:
         base = 50000

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.services import recompute_impact
 from app.services.base import BaseModuleService
 from app.store import store
 
@@ -145,6 +146,57 @@ class DataQualityRuleService(BaseModuleService):
                 dimension_stats, key=lambda d: dimension_stats[d]["pass_rate"]
             ) if dimension_stats else None,
         }
+
+    def list_agg_reviews(
+        self,
+        *,
+        region: str | None = None,
+        date: str | None = None,
+        status: str | None = None,
+        valid: bool | None = None,
+        review_id: str | None = None,
+    ) -> dict[str, Any]:
+        """质量复核台：汇总从聚合重算影响视图领用的复核项。
+
+        有效复核项对应分区最新计算版本；历史版本的复核项仍可回查和补录。
+        """
+        return recompute_impact.list_reviews(
+            region=region, date=date, status=status, valid=valid, review_id=review_id)
+
+    def get_agg_review(self, review_id: str) -> dict[str, Any]:
+        review = recompute_impact.get_review(review_id)
+        if review is None:
+            return {"ok": False, "message": f"复核项 {review_id} 不存在"}
+        return review
+
+    def claim_agg_review(self, review_id: str, reviewer: str | None = None) -> dict[str, Any]:
+        review, message = recompute_impact.claim_review(review_id, reviewer)
+        return {"ok": review is not None, "message": message, "review": review}
+
+    def submit_agg_review(
+        self,
+        review_id: str,
+        *,
+        actual_value: Any,
+        verdict: str | None = None,
+        remark: str | None = None,
+        reviewer: str | None = None,
+    ) -> dict[str, Any]:
+        """提交复核结果，保留实际核验值；历史版本不会被当前版本覆盖。"""
+        review, message = recompute_impact.submit_review(
+            review_id,
+            actual_value=actual_value,
+            verdict=verdict,
+            remark=remark,
+            reviewer=reviewer,
+        )
+        return {"ok": review is not None, "message": message, "review": review}
+
+    def agg_partition_history(
+        self, region: str, date: str, rule_id: int | None = None
+    ) -> dict[str, Any]:
+        """回查同一地区同一天各计算版本的输出与质检结论。"""
+        return recompute_impact.get_partition_history(region, date, rule_id)
 
     def _run_dimension_checks(self, dimension: str, target_table: str) -> list[dict[str, Any]]:
         checks_map = {

@@ -6,6 +6,22 @@
         <p class="page-desc">{{ meta.desc }}</p>
       </div>
       <div class="page-actions">
+        <RouterLink
+          v-if="meta.key === 'agg_builder'"
+          class="btn"
+          data-testid="open-impact-view"
+          to="/agg_builder/impact"
+        >
+          重算影响视图
+        </RouterLink>
+        <RouterLink
+          v-if="meta.key === 'data_quality_rule'"
+          class="btn"
+          data-testid="open-review-workbench"
+          to="/data_quality_rule/reviews"
+        >
+          质量复核台
+        </RouterLink>
         <button class="btn primary" data-testid="open-create" type="button" @click="openCreate">
           登记{{ meta.entity }}
         </button>
